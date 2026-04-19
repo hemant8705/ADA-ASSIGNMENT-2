@@ -1,0 +1,125 @@
+
+import time
+import random
+from itertools import permutations
+import matplotlib.pyplot as plt
+
+def merge(left, right):
+    result = []
+    i = j = 0
+
+    while i < len(left) and j < len(right):
+        if left[i] < right[j]:
+            result.append(left[i])
+            i += 1
+        else:
+            result.append(right[j])
+            j += 1
+
+    result.extend(left[i:])
+    result.extend(right[j:])
+    return result
+
+
+def merge_sort(arr):
+    if len(arr) <= 1:
+        return arr
+
+    mid = len(arr) // 2
+    left = merge_sort(arr[:mid])
+    right = merge_sort(arr[mid:])
+
+    return merge(left, right)
+
+def activity_selection(start, finish):
+    activities = list(zip(start, finish))
+    activities.sort(key=lambda x: x[1])
+
+    selected = [activities[0]]
+
+    for i in range(1, len(activities)):
+        if activities[i][0] >= selected[-1][1]:
+            selected.append(activities[i])
+
+    return selected
+
+
+def knapsack(weights, values, capacity):
+    n = len(values)
+    dp = [[0]*(capacity+1) for _ in range(n+1)]
+
+    for i in range(1, n+1):
+        for w in range(capacity+1):
+            if weights[i-1] <= w:
+                dp[i][w] = max(
+                    values[i-1] + dp[i-1][w-weights[i-1]],
+                    dp[i-1][w]
+                )
+            else:
+                dp[i][w] = dp[i-1][w]
+
+    return dp[n][capacity]
+
+
+def tsp(graph):
+    n = len(graph)
+    nodes = list(range(1, n))
+
+    min_cost = float('inf')
+    best_path = None
+
+    for perm in permutations(nodes):
+        cost = 0
+        k = 0
+
+        for j in perm:
+            cost += graph[k][j]
+            k = j
+
+        cost += graph[k][0]
+
+        if cost < min_cost:
+            min_cost = cost
+            best_path = (0,) + perm + (0,)
+
+    return min_cost, best_path
+
+
+if __name__ == "__main__":
+
+    arr = [random.randint(1, 100) for _ in range(10)]
+    print("Original Array:", arr)
+
+    start = time.time()
+    sorted_arr = merge_sort(arr)
+    end = time.time()
+
+    print("Sorted Array:", sorted_arr)
+    print("Time:", end - start)
+
+
+    start_times = [1, 3, 0, 5, 8, 5]
+    finish_times = [2, 4, 6, 7, 9, 9]
+
+    selected = activity_selection(start_times, finish_times)
+    print("\nSelected Activities:", selected)
+
+
+    values = [60, 100, 120]
+    weights = [10, 20, 30]
+    capacity = 50
+
+    result = knapsack(weights, values, capacity)
+    print("\nKnapsack Max Value:", result)
+
+
+    graph = [
+        [0, 10, 15, 20],
+        [10, 0, 35, 25],
+        [15, 35, 0, 30],
+        [20, 25, 30, 0]
+    ]
+
+    cost, path = tsp(graph)
+    print("\nTSP Minimum Cost:", cost)
+    print("Path:", path)
